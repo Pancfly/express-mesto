@@ -9,6 +9,8 @@ const mongoose = require('mongoose', {
 const userRouters = require('./routes/user');
 const cardRouters = require('./routes/card');
 
+const Error404 = 404;
+
 const app = express();
 
 const mestodb = 'mongodb://localhost:27017/mestodb';
@@ -26,6 +28,10 @@ app.use((req, res, next) => {
 
 app.use('/', userRouters);
 app.use('/', cardRouters);
+
+app.use('*', (req, res) => {
+  res.status(Error404).send({ message: 'Не существующий адрес.' });
+});
 
 app.listen(PORT, () => {
   console.log(`Сервер запущен на http://localhost:${PORT}`);
