@@ -58,7 +58,7 @@ module.exports.updateProfile = (req, res) => {
     .catch((err) => {
       if (err.message === 'NotValidId') {
         res.status(Error404).send({ message: '404 — Пользователь по указанному _id не найден.' });
-      } else if (err.name === 'ValidationError') {
+      } else if ((err.name === 'ValidationError') || (err.name === 'CastError')) {
         res.status(Error400).send({ message: '400 — Переданы некорректные данные при обновлении профиля пользователя' });
       } else {
         res.status(Error500).send({ message: '500 — Ошибка по умолчанию.' });
@@ -76,7 +76,7 @@ module.exports.updateAvatar = (req, res) => {
     .catch((err) => {
       if (err.message === 'NotValidId') {
         res.status(Error404).send({ message: '404 — Пользователь по указанному _id не найден.' });
-      } else if (err.errors) {
+      } else if (err.name === 'CastError') {
         res.status(Error400).send({ message: '400 — Переданы некорректные данные при обновлении аватара пользователя' });
       } else {
         res.status(Error500).send({ message: '500 — Ошибка по умолчанию.' });
