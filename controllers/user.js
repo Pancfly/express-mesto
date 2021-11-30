@@ -2,9 +2,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const UserModel = require('../models/user');
 
-const Error400 = 400;
-const Error404 = 404;
-const Error409 = 409;
+const NotFoundError = require('../errors/not-found-error');
+const BadRequestError = require('../errors/bad-request-error');
+const ConflictError = require('../errors/conflict-error');
+
 const Ok200 = 200;
 
 module.exports.getUsers = (req, res, next) => {
@@ -12,9 +13,7 @@ module.exports.getUsers = (req, res, next) => {
     .then((data) => {
       res.status(Ok200).send(data);
     })
-    .catch(() => {
-      next();
-    });
+    .catch(next);
 };
 
 module.exports.getUserId = (req, res, next) => {
@@ -26,9 +25,9 @@ module.exports.getUserId = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(Error400).send({ message: '400 — Переданы некорректные данные для поиска пользователя' });
+        next(new BadRequestError('400 — Переданы некорректные данные для поиска пользователя.'));
       } else if (err.message === 'NotValidId') {
-        res.status(Error404).send({ message: '404 — Пользователь по указанному _id не найден.' });
+        next(new NotFoundError('404 — Пользователь по указанному _id не найден.'));
       }
       next(err);
     });
@@ -49,9 +48,9 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(Error400).send({ message: '400 — Переданы некорректные данные при создании пользователя' });
+        next(new BadRequestError('400 — Переданы некорректные данные при создании пользователя.'));
       } else if (err.name === 'MongoError' && err.code === 11000) {
-        res.status(Error409).send({ message: '409 — Пользователь с таким email уже существует' });
+        next(new ConflictError('409 — Пользователь с таким email уже существует.'));
       }
       next(err);
     });
@@ -66,9 +65,9 @@ module.exports.updateProfile = (req, res, next) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(Error404).send({ message: '404 — Пользователь по указанному _id не найден.' });
+        next(new NotFoundError('404 — Пользователь по указанному _id не найден.'));
       } else if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(Error400).send({ message: '400 — Переданы некорректные данные при обновлении профиля пользователя' });
+        next(new BadRequestError('400 — Переданы некорректные данные при обновлении профиля пользователя.'));
       }
       next(err);
     });
@@ -83,9 +82,9 @@ module.exports.updateAvatar = (req, res, next) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(Error404).send({ message: '404 — Пользователь по указанному _id не найден.' });
+        next(new NotFoundError('404 — Пользователь по указанному _id не найден.'));
       } else if (err.name === 'ValidationError' || err.name === 'CastError') {
-        res.status(Error400).send({ message: '400 — Переданы некорректные данные при обновлении аватара пользователя' });
+        next(new BadRequestError('400 — Переданы некорректные данные при обновлении аватара пользователя.'));
       }
       next(err);
     });
@@ -93,15 +92,27 @@ module.exports.updateAvatar = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  UserModel.findUserByCredentials(email, password)
+  UserModel.findOne({ email }).select('+password')
+    .orFail(new Error('IncorrectEmail'))
     .then((user) => {
-      const payload = { _id: user._id };
-      res.send({
-        token: jwt.sign(payload, '19randomrabbits', { expiresIn: '7d' }),
-      });
+      bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            next(new BadRequestError('400 — Указан некорректный Email или пароль.'));
+          } else {
+            const payload = { _id: user._id };
+            res.send({
+              token: jwt.sign(payload, '19randomrabbits', { expiresIn: '7d' }),
+            });
+          }
+        });
     })
     .catch((err) => {
-      next(err);
+      if (err.message === 'IncorrectEmail') {
+        next(new BadRequestError('400 — Указан некорректный Email или пароль.'));
+      } else {
+        next(err);
+      }
     });
 };
 
@@ -113,9 +124,9 @@ module.exports.getUserMe = (req, res, next) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        res.status(Error404).send({ message: '404 — Пользователь по указанному _id не найден.' });
+        next(new NotFoundError('404 — Пользователь по указанному _id не найден.'));
       } else if (err.name === 'CastError') {
-        res.status(Error400).send({ message: '400 — Переданы некорректные данные при обновлении аватара пользователя' });
+        next(new BadRequestError('400 — Переданы некорректные данные для поиска пользователя.'));
       }
       next(err);
     });

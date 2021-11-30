@@ -1,8 +1,9 @@
 const CardModel = require('../models/card');
 
-const Error400 = 400;
-const Error403 = 403;
-const Error404 = 404;
+const NotFoundError = require('../errors/not-found-error');
+const BadRequestError = require('../errors/bad-request-error');
+const ForbiddenError = require('../errors/forbidden-error');
+
 const Ok200 = 200;
 
 module.exports.getCards = (req, res, next) => {
@@ -10,9 +11,7 @@ module.exports.getCards = (req, res, next) => {
     .then((data) => {
       res.status(Ok200).send(data);
     })
-    .catch(() => {
-      next();
-    });
+    .catch(next);
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -24,7 +23,7 @@ module.exports.createCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(Error400).send({ message: '400 — Переданы некорректные данные при создании карточки ' });
+        throw new BadRequestError('400 — Переданы некорректные данные при создании карточки');
       }
       next(err);
     });
@@ -39,14 +38,14 @@ module.exports.deleteCard = (req, res, next) => {
         card.remove();
         res.status(Ok200).send({ message: 'Карточка удалена!' });
       } else {
-        res.status(Error403).send({ message: 'Это карточка не ваша, у вас нет прав!' });
+        throw new ForbiddenError('Это карточка не ваша, у вас нет прав!');
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(Error400).send({ message: '400 — Переданы некорректные данные для удаления карточки' });
+        next(new BadRequestError('400 — Переданы некорректные данные для удаления карточки'));
       } else if (err.message === 'NotValidId') {
-        res.status(Error404).send({ message: '404 — Передан несуществующий _id карточки.' });
+        next(new NotFoundError('404 — Передан несуществующий _id карточки.'));
       }
       next(err);
     });
@@ -64,9 +63,9 @@ module.exports.likeCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(Error400).send({ message: '400 — Переданы некорректные данные для постановки лайка.' });
+        next(new BadRequestError('400 — Переданы некорректные данные для постановки лайка.'));
       } else if (err.message === 'NotValidId') {
-        res.status(Error404).send({ message: '404 — Передан несуществующий _id карточки.' });
+        next(new NotFoundError('404 — Передан несуществующий _id карточки.'));
       }
       next(err);
     });
@@ -84,9 +83,9 @@ module.exports.dislikeCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(Error400).send({ message: '400 — Переданы некорректные данные для снятии лайка.' });
+        next(new BadRequestError('400 — Переданы некорректные данные для снятии лайка.'));
       } else if (err.message === 'NotValidId') {
-        res.status(Error404).send({ message: '404 — Передан несуществующий _id карточки.' });
+        next(new NotFoundError('404 — Передан несуществующий _id карточки.'));
       }
       next(err);
     });
