@@ -6,7 +6,8 @@ const NotFoundError = require('../errors/not-found-error');
 const BadRequestError = require('../errors/bad-request-error');
 const ConflictError = require('../errors/conflict-error');
 
-const Ok200 = 200;
+const Ok200 = require('../utils/constanta');
+const secret = require('../utils/constanta');
 
 module.exports.getUsers = (req, res, next) => {
   UserModel.find()
@@ -25,9 +26,9 @@ module.exports.getUserId = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('400 — Переданы некорректные данные для поиска пользователя.'));
+        next(new BadRequestError('Переданы некорректные данные для поиска пользователя.'));
       } else if (err.message === 'NotValidId') {
-        next(new NotFoundError('404 — Пользователь по указанному _id не найден.'));
+        next(new NotFoundError('Пользователь по указанному _id не найден.'));
       }
       next(err);
     });
@@ -48,9 +49,9 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(new BadRequestError('400 — Переданы некорректные данные при создании пользователя.'));
+        next(new BadRequestError('Переданы некорректные данные при создании пользователя.'));
       } else if (err.name === 'MongoError' && err.code === 11000) {
-        next(new ConflictError('409 — Пользователь с таким email уже существует.'));
+        next(new ConflictError('Пользователь с таким email уже существует.'));
       }
       next(err);
     });
@@ -65,9 +66,9 @@ module.exports.updateProfile = (req, res, next) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        next(new NotFoundError('404 — Пользователь по указанному _id не найден.'));
+        next(new NotFoundError('Пользователь по указанному _id не найден.'));
       } else if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(new BadRequestError('400 — Переданы некорректные данные при обновлении профиля пользователя.'));
+        next(new BadRequestError('Переданы некорректные данные при обновлении профиля пользователя.'));
       }
       next(err);
     });
@@ -82,9 +83,9 @@ module.exports.updateAvatar = (req, res, next) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        next(new NotFoundError('404 — Пользователь по указанному _id не найден.'));
+        next(new NotFoundError('Пользователь по указанному _id не найден.'));
       } else if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(new BadRequestError('400 — Переданы некорректные данные при обновлении аватара пользователя.'));
+        next(new BadRequestError('Переданы некорректные данные при обновлении аватара пользователя.'));
       }
       next(err);
     });
@@ -98,18 +99,18 @@ module.exports.login = (req, res, next) => {
       bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            next(new BadRequestError('400 — Указан некорректный Email или пароль.'));
+            next(new BadRequestError('Указан некорректный Email или пароль.'));
           } else {
             const payload = { _id: user._id };
             res.send({
-              token: jwt.sign(payload, '19randomrabbits', { expiresIn: '7d' }),
+              token: jwt.sign(payload, secret, { expiresIn: '7d' }),
             });
           }
         });
     })
     .catch((err) => {
       if (err.message === 'IncorrectEmail') {
-        next(new BadRequestError('400 — Указан некорректный Email или пароль.'));
+        next(new BadRequestError('Указан некорректный Email или пароль.'));
       } else {
         next(err);
       }
@@ -124,9 +125,9 @@ module.exports.getUserMe = (req, res, next) => {
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        next(new NotFoundError('404 — Пользователь по указанному _id не найден.'));
+        next(new NotFoundError('Пользователь по указанному _id не найден.'));
       } else if (err.name === 'CastError') {
-        next(new BadRequestError('400 — Переданы некорректные данные для поиска пользователя.'));
+        next(new BadRequestError('Переданы некорректные данные для поиска пользователя.'));
       }
       next(err);
     });

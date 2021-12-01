@@ -53,6 +53,7 @@ app.use(errors());
 
 app.use(errorHandler);
 
+// eslint-disable-next-line no-console
 app.listen(PORT, () => {
   console.log(`Сервер запущен на http://localhost:${PORT}`);
 });

@@ -4,7 +4,7 @@ const NotFoundError = require('../errors/not-found-error');
 const BadRequestError = require('../errors/bad-request-error');
 const ForbiddenError = require('../errors/forbidden-error');
 
-const Ok200 = 200;
+const Ok200 = require('../utils/constanta');
 
 module.exports.getCards = (req, res, next) => {
   CardModel.find()
@@ -23,7 +23,7 @@ module.exports.createCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError('400 — Переданы некорректные данные при создании карточки');
+        throw new BadRequestError('Переданы некорректные данные при создании карточки');
       }
       next(err);
     });
@@ -43,9 +43,9 @@ module.exports.deleteCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('400 — Переданы некорректные данные для удаления карточки'));
+        next(new BadRequestError('Переданы некорректные данные для удаления карточки'));
       } else if (err.message === 'NotValidId') {
-        next(new NotFoundError('404 — Передан несуществующий _id карточки.'));
+        next(new NotFoundError('Передан несуществующий _id карточки.'));
       }
       next(err);
     });
@@ -63,9 +63,9 @@ module.exports.likeCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('400 — Переданы некорректные данные для постановки лайка.'));
+        next(new BadRequestError('Переданы некорректные данные для постановки лайка.'));
       } else if (err.message === 'NotValidId') {
-        next(new NotFoundError('404 — Передан несуществующий _id карточки.'));
+        next(new NotFoundError('Передан несуществующий _id карточки.'));
       }
       next(err);
     });
@@ -83,9 +83,9 @@ module.exports.dislikeCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('400 — Переданы некорректные данные для снятии лайка.'));
+        next(new BadRequestError('Переданы некорректные данные для снятии лайка.'));
       } else if (err.message === 'NotValidId') {
-        next(new NotFoundError('404 — Передан несуществующий _id карточки.'));
+        next(new NotFoundError('Передан несуществующий _id карточки.'));
       }
       next(err);
     });
