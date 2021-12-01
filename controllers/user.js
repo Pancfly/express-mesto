@@ -6,8 +6,7 @@ const NotFoundError = require('../errors/not-found-error');
 const BadRequestError = require('../errors/bad-request-error');
 const ConflictError = require('../errors/conflict-error');
 
-const Ok200 = require('../utils/constanta');
-const secret = require('../utils/constanta');
+const { Ok200, secret } = require('../utils/constanta');
 
 module.exports.getUsers = (req, res, next) => {
   UserModel.find()
@@ -50,7 +49,7 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные при создании пользователя.'));
-      } else if (err.name === 'MongoError' && err.code === 11000) {
+      } else if (err.code === 11000) {
         next(new ConflictError('Пользователь с таким email уже существует.'));
       }
       next(err);

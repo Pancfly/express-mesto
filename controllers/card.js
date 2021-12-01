@@ -4,7 +4,7 @@ const NotFoundError = require('../errors/not-found-error');
 const BadRequestError = require('../errors/bad-request-error');
 const ForbiddenError = require('../errors/forbidden-error');
 
-const Ok200 = require('../utils/constanta');
+const { Ok200 } = require('../utils/constanta');
 
 module.exports.getCards = (req, res, next) => {
   CardModel.find()
