@@ -28,8 +28,9 @@ module.exports.getUserId = (req, res, next) => {
         next(new BadRequestError('Переданы некорректные данные для поиска пользователя.'));
       } else if (err.message === 'NotValidId') {
         next(new NotFoundError('Пользователь по указанному _id не найден.'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -51,8 +52,9 @@ module.exports.createUser = (req, res, next) => {
         next(new BadRequestError('Переданы некорректные данные при создании пользователя.'));
       } else if (err.code === 11000) {
         next(new ConflictError('Пользователь с таким email уже существует.'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -68,8 +70,9 @@ module.exports.updateProfile = (req, res, next) => {
         next(new NotFoundError('Пользователь по указанному _id не найден.'));
       } else if (err.name === 'ValidationError' || err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные при обновлении профиля пользователя.'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -85,8 +88,9 @@ module.exports.updateAvatar = (req, res, next) => {
         next(new NotFoundError('Пользователь по указанному _id не найден.'));
       } else if (err.name === 'ValidationError' || err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные при обновлении аватара пользователя.'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -127,7 +131,8 @@ module.exports.getUserMe = (req, res, next) => {
         next(new NotFoundError('Пользователь по указанному _id не найден.'));
       } else if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные для поиска пользователя.'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
